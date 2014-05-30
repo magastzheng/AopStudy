@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AopStudy.AcmeCarRental;
+using AopStudy.CastleAop;
+using AopStudy.Twitter;
+using Castle.DynamicProxy;
 
 namespace AopStudy
 {
@@ -11,7 +14,32 @@ namespace AopStudy
     {
         static void Main(string[] args)
         {
-            TestAcmeCarRental();
+            TestAopInvoiceService();
+            //TestTwitter();
+            //TestAcmeCarRental();
+            Console.Read();
+        }
+
+        private static void TestAopInvoiceService()
+        {
+            var proxyGenerator = new ProxyGenerator();
+            var inoiceService = proxyGenerator.CreateClassProxy<AopInvoiceService>(new TransactionWithRetries());
+            //var inoiceService = new AopInvoiceService();
+            var invoice = new Invoice
+                {
+                    Id = Guid.NewGuid(),
+                    Discount = 1.01m,
+                    CostPerDay = 20.5m
+                };
+            inoiceService.Save(invoice);
+        }
+
+        private static void TestTwitter()
+        {
+            var proxyGenerator = new ProxyGenerator();
+            var svc = proxyGenerator.CreateClassProxy<TwitterClient>(new CastleInterceptorAspect());
+            //var svc = new TwitterClient();
+            svc.Send("hi");
         }
 
         private static void TestAcmeCarRental()
